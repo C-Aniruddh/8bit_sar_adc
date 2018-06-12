@@ -1,0 +1,205 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity sar is
+	port (in_clk, rst_n, start, comp_in : in std_logic;
+	data_out : out std_logic_vector (7 downto 0);
+	D_out : out std_logic_vector(7 downto 0); 
+	B_hold : out std_logic_vector(7 downto 0);
+	sample : out std_logic;
+	hold : out std_logic;
+	eoc : out std_logic);
+end sar;
+
+architecture state_machine of sar is
+type state is (reset, state1, state2, state3, state4, state5, state6, state7, state8, state9, state10, state11, state12, state13, state14, state15, state16, state17, state18);
+signal pr_state, nx_state : state;
+begin			 
+	-- Lower sequential circuit
+	seq : process(in_clk)
+	begin
+		if rst_n'event and rst_n = '0' then -- negedge of rst
+			pr_state <= reset;
+		elsif in_clk'event and in_clk='1' then  -- posedge of clk
+			pr_state <= nx_state;
+		end if;
+	end process;
+	
+	-- Upper combinational circuit
+	combinational : process (pr_state, start)
+	begin
+		case pr_state is
+			when reset => -- reset 
+				B_hold <= "11111111";
+				D_out <= "00000000";
+				data_out <= "00000000";
+				hold <= '1';
+				sample <= '0';
+				eoc <= '0';
+				
+				if start = '1' then
+					nx_state <= state1;
+				else
+					nx_state <= reset;
+				end if;
+			
+			when state1 =>		  -- sample
+				B_hold <= "00000000";
+				hold <= '0';
+				sample <= '1';
+				nx_state <= state2;
+			
+			when state2 =>		 -- hold
+				B_hold <= "11111111";
+				D_out <= "00000000";
+				nx_state <= state3;
+			
+			when state3 =>		 -- reset first bit
+				B_hold(7) <= '0';
+				D_out(7) <= '1';
+				data_out(7) <= '1';
+				nx_state <= state4;
+			
+			when state4 =>       -- check from comparator and set first bit
+				if comp_in = '1' then
+					B_hold(7) <= '0';
+					D_out(7) <= '1';
+					data_out(7) <= '1';
+				else
+					B_hold(7) <= '1';
+					D_out(7) <= '0';
+					data_out(7) <= '0';
+				end if;
+				nx_state <= state5;
+			
+			when state5 =>	   -- reset second bit
+				B_hold(6) <= '0';
+				D_out(6) <= '1';
+				data_out(6) <= '1';
+				nx_state <= state6;
+			
+			when state6 =>	 -- check comparator and set second bit
+				if comp_in = '1' then
+					B_hold(6) <= '0';
+					D_out(6) <= '1';
+					data_out(6) <= '1';
+				else
+					B_hold(6) <= '1';
+					D_out(6) <= '0';
+					data_out(6) <= '0';
+				end if;
+				nx_state <= state7;
+			
+			when state7 =>	   -- reset third bit
+				B_hold(5) <= '0';
+				D_out(5) <= '1';
+				data_out(5) <= '1';
+				nx_state <= state8;
+			
+			when state8 =>	 -- check comparator and set third bit
+				if comp_in = '1' then
+					B_hold(5) <= '0';
+					D_out(5) <= '1';
+					data_out(5) <= '1';
+				else
+					B_hold(5) <= '1';
+					D_out(5) <= '0';
+					data_out(5) <= '0';
+				end if;
+				nx_state <= state9;
+				
+			when state9 =>	   -- reset fourth bit
+				B_hold(4) <= '0';
+				D_out(4) <= '1';
+				data_out(4) <= '1';
+				nx_state <= state10;
+			
+			when state10 =>	 -- check comparator and set fourth bit
+				if comp_in = '1' then
+					B_hold(4) <= '0';
+					D_out(4) <= '1';
+					data_out(4) <= '1';
+				else
+					B_hold(4) <= '1';
+					D_out(4) <= '0';
+					data_out(4) <= '0';
+				end if;
+				nx_state <= state11;
+				
+			when state11 =>	   -- reset fifth bit
+				B_hold(3) <= '0';
+				D_out(3) <= '1';
+				data_out(3) <= '1';
+				nx_state <= state12;
+			
+			when state12 =>	 -- check comparator and set fifth bit
+				if comp_in = '1' then
+					B_hold(3) <= '0';
+					D_out(3) <= '1';
+					data_out(3) <= '1';
+				else
+					B_hold(3) <= '1';
+					D_out(3) <= '0';
+					data_out(3) <= '0';
+				end if;
+				nx_state <= state13;
+			
+			when state13 =>	   -- reset sixth bit
+				B_hold(2) <= '0';
+				D_out(2) <= '1';
+				data_out(2) <= '1';  
+				nx_state <= state14;
+			
+			when state14 =>	 -- check comparator and set sixth bit
+				if comp_in = '1' then
+					B_hold(2) <= '0';
+					D_out(2) <= '1';
+					data_out(2) <= '1';
+				else
+					B_hold(2) <= '1';
+					D_out(2) <= '0';
+					data_out(2) <= '0';
+				end if;
+				nx_state <= state15;
+				
+			when state15 =>	   -- reset seventh bit
+				B_hold(1) <= '0';
+				D_out(1) <= '1';
+				data_out(1) <= '1';
+				nx_state <= state16;
+			
+			when state16 =>	 -- check comparator and set seventh bit
+				if comp_in = '1' then
+					B_hold(1) <= '0';    
+					D_out(1) <= '1';
+					data_out(1) <= '1';
+				else
+					B_hold(1) <= '1';
+					D_out(1) <= '0';
+					data_out(1) <= '0';
+				end if;
+				nx_state <= state17;
+				
+			when state17 =>	   -- reset eighth bit
+				B_hold(0) <= '0';    
+				D_out(0) <= '1';
+				data_out(0) <= '1';
+				nx_state <= state18;
+			
+			when state18 =>	 -- check comparator and set eighth bit
+				if comp_in = '1' then
+					B_hold(0) <= '0';
+					D_out(0) <= '1';
+					data_out(0) <= '1';
+				else
+					B_hold(0) <= '1';
+					D_out(0) <= '0';
+					data_out(0) <= '0';
+				end if;
+				eoc <= '1';
+				nx_state <= reset;
+		end case;
+	end process;
+end state_machine;
+				
+				
