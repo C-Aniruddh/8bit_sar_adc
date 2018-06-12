@@ -8,7 +8,7 @@ Workflow :
 5. Export values for about 100m time period as a CSV file.
 6. Import the file to matlab, plot the waveform.
 7. Get a FFT of the input data.
-8. Apply hamming window to reduce ripples.
+8. Apply hanning window to reduce ripples.
 
 
 ## Schematic for 8-bit ADC
